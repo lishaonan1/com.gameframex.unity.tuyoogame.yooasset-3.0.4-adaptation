@@ -1,0 +1,35 @@
+{
+    "name": "YooAsset",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.gameframex.unity.tuyoogame.yooasset",
+            "expression": "",
+            "define": "YOOASSET_3"
+        },
+        {
+            "name": "com.gameframex.unity.tuyoogame.yooasset",
+            "expression": "3.0.0-beta",
+            "define": "YOOASSET_3_0"
+        },
+        {
+            "name": "com.gameframex.unity.tuyoogame.yooasset",
+            "expression": "3.0.0-beta",
+            "define": "YOOASSET_3_0_OR_NEWER"
+        },
+        {
+            "name": "com.gameframex.unity.tuyoogame.yooasset",
+            "expression": "",
+            "define": "YOOASSET_LEGACY_API"
+        }
+    ],
+    "noEngineReferences": false
+}
