@@ -124,9 +124,23 @@ namespace YooAsset.Editor
         /// <returns>所有资源包的 AssetBundleBuild 数据数组</returns>
         public UnityEditor.AssetBundleBuild[] GetPipelineBuilds(bool replaceAssetPathWithAddress)
         {
+            return GetPipelineBuilds(replaceAssetPathWithAddress, true);
+        }
+
+        /// <summary>
+        /// 获取构建管线里需要的数据
+        /// </summary>
+        /// <param name="replaceAssetPathWithAddress">是否使用可寻址地址替代资源路径</param>
+        /// <param name="includeRawFileBundles">是否将原生文件资源包交给 Unity 引擎构建</param>
+        /// <returns>符合筛选条件的 AssetBundleBuild 数据数组</returns>
+        public UnityEditor.AssetBundleBuild[] GetPipelineBuilds(bool replaceAssetPathWithAddress, bool includeRawFileBundles)
+        {
             List<UnityEditor.AssetBundleBuild> builds = new List<UnityEditor.AssetBundleBuild>(_bundleInfoDictionary.Count);
             foreach (var bundleInfo in _bundleInfoDictionary.Values)
             {
+                if (includeRawFileBundles == false && bundleInfo.IsRawFileBundle)
+                    continue;
+
                 builds.Add(bundleInfo.CreatePipelineBuild(replaceAssetPathWithAddress));
             }
             return builds.ToArray();

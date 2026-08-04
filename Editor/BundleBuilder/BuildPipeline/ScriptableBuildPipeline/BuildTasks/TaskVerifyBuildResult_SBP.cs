@@ -34,10 +34,16 @@ namespace YooAsset.Editor
         private void VerifyingBuildingResult(BuildContext context, IBundleBuildResults buildResults)
         {
             var buildMapContext = context.GetContextObject<BuildMapContext>();
-            List<string> unityBuildContent = buildResults.BundleInfos.Keys.ToList();
+            var buildParametersContext = context.GetContextObject<BuildParametersContext>();
+            List<string> unityBuildContent = buildResults == null ? new List<string>() : buildResults.BundleInfos.Keys.ToList();
 
             // 1. 计划内容
-            List<string> planningContent = buildMapContext.Collection.Select(t => t.BundleName).ToList();
+            List<string> planningContent = buildMapContext.Collection
+                .Where(t => t.IsRawFileBundle == false)
+                .Select(t => t.BundleName)
+                .ToList();
+
+            TaskBuilding_RFBP.VerifyRawFileBundles(buildMapContext, buildParametersContext);
 
             // 2. 验证差异
             List<string> exceptBundleList1 = unityBuildContent.Except(planningContent).ToList();

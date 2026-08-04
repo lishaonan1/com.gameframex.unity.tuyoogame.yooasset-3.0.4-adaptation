@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace YooAsset.Editor
 {
     /// <summary>
@@ -22,11 +24,14 @@ namespace YooAsset.Editor
             string packageOutputDirectory = buildParametersContext.GetPackageOutputDirectory();
             BuildLogger.Log($"Start making patch package: '{packageOutputDirectory}'.");
 
-            // 拷贝UnityManifest序列化文件
-            CopyPipelineFile(pipelineOutputDirectory, packageOutputDirectory, YooAssetSettings.OutputFolderName);
+            // 混合包包含普通 AssetBundle 时才会生成 Unity manifest。
+            string unityManifestPath = $"{pipelineOutputDirectory}/{YooAssetSettings.OutputFolderName}";
+            if (File.Exists(unityManifestPath))
+                CopyPipelineFile(pipelineOutputDirectory, packageOutputDirectory, YooAssetSettings.OutputFolderName);
 
-            // 拷贝UnityManifest文本文件
-            CopyPipelineFile(pipelineOutputDirectory, packageOutputDirectory, $"{YooAssetSettings.OutputFolderName}.manifest");
+            string unityManifestTextPath = $"{pipelineOutputDirectory}/{YooAssetSettings.OutputFolderName}.manifest";
+            if (File.Exists(unityManifestTextPath))
+                CopyPipelineFile(pipelineOutputDirectory, packageOutputDirectory, $"{YooAssetSettings.OutputFolderName}.manifest");
 
             // 拷贝所有补丁文件
             CopyPackageBundles(buildMapContext);

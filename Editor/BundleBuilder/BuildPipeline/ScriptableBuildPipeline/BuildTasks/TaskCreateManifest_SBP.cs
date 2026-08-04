@@ -23,11 +23,20 @@ namespace YooAsset.Editor
 
         protected override string[] GetBundleDepends(BuildContext context, string bundleName)
         {
+            var buildMapContext = context.GetContextObject<BuildMapContext>();
+            if (buildMapContext.GetBundleInfo(bundleName).IsRawFileBundle)
+                return Array.Empty<string>();
+
             var buildResultContext = context.GetContextObject<TaskBuilding_SBP.BuildResultContext>();
+            if (buildResultContext.Results == null)
+            {
+                string message = BuildLogger.GetErrorMessage(ErrorCode.NotFoundUnityBundleInBuildResult, $"Unity 资源包构建结果不存在：'{bundleName}'。");
+                throw new InvalidOperationException(message);
+            }
 
             if (buildResultContext.Results.BundleInfos.ContainsKey(bundleName) == false)
             {
-                string message = BuildLogger.GetErrorMessage(ErrorCode.NotFoundUnityBundleInBuildResult, $"Bundle not found in engine build result: '{bundleName}'.");
+                string message = BuildLogger.GetErrorMessage(ErrorCode.NotFoundUnityBundleInBuildResult, $"资源包未出现在引擎构建结果中：'{bundleName}'。");
                 throw new InvalidOperationException(message);
             }
             return buildResultContext.Results.BundleInfos[bundleName].Dependencies;

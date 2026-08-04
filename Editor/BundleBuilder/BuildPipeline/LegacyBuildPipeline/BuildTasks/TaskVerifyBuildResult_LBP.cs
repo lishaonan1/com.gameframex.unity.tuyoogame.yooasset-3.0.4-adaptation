@@ -33,10 +33,16 @@ namespace YooAsset.Editor
         private void VerifyingBuildingResult(BuildContext context, AssetBundleManifest unityManifest)
         {
             var buildMapContext = context.GetContextObject<BuildMapContext>();
-            string[] unityBuildContent = unityManifest.GetAllAssetBundles();
+            var buildParametersContext = context.GetContextObject<BuildParametersContext>();
+            string[] unityBuildContent = unityManifest == null ? Array.Empty<string>() : unityManifest.GetAllAssetBundles();
 
             // 1. 计划内容
-            string[] planningContent = buildMapContext.Collection.Select(t => t.BundleName).ToArray();
+            string[] planningContent = buildMapContext.Collection
+                .Where(t => t.IsRawFileBundle == false)
+                .Select(t => t.BundleName)
+                .ToArray();
+
+            TaskBuilding_RFBP.VerifyRawFileBundles(buildMapContext, buildParametersContext);
 
             // 2. 验证差异
             List<string> exceptBundleList1 = unityBuildContent.Except(planningContent).ToList();

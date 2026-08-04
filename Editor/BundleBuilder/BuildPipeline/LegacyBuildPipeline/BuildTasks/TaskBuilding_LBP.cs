@@ -34,23 +34,33 @@ namespace YooAsset.Editor
             // 开始构建
             string pipelineOutputDirectory = buildParametersContext.GetPipelineOutputDirectory();
             BuildAssetBundleOptions buildOptions = legacyBuildParameters.GetBundleBuildOptions();
-            var bundleBuilds = buildMapContext.GetPipelineBuilds(legacyBuildParameters.ReplaceAssetPathWithAddress);
-            AssetBundleManifest unityManifest = BuildPipeline.BuildAssetBundles(pipelineOutputDirectory, bundleBuilds, buildOptions, buildParametersContext.Parameters.BuildTarget);
-            if (unityManifest == null)
+            TaskBuilding_RFBP.ValidateRawFileBundles(buildMapContext);
+            var bundleBuilds = buildMapContext.GetPipelineBuilds(legacyBuildParameters.ReplaceAssetPathWithAddress, false);
+            AssetBundleManifest unityManifest = null;
+            if (bundleBuilds.Length > 0)
             {
-                string message = BuildLogger.GetErrorMessage(ErrorCode.UnityEngineBuildFailed, "UnityEngine build failed.");
-                throw new InvalidOperationException(message);
+                unityManifest = BuildPipeline.BuildAssetBundles(pipelineOutputDirectory, bundleBuilds, buildOptions, buildParametersContext.Parameters.BuildTarget);
+                if (unityManifest == null)
+                {
+                    string message = BuildLogger.GetErrorMessage(ErrorCode.UnityEngineBuildFailed, "UnityEngine build failed.");
+                    throw new InvalidOperationException(message);
+                }
+
+                // 检测输出目录
+                string unityOutputManifestFilePath = $"{pipelineOutputDirectory}/{YooAssetSettings.OutputFolderName}";
+                if (System.IO.File.Exists(unityOutputManifestFilePath) == false)
+                {
+                    string message = BuildLogger.GetErrorMessage(ErrorCode.UnityEngineBuildFatal, $"Output {nameof(AssetBundleManifest)} file not found: '{unityOutputManifestFilePath}'.");
+                    throw new InvalidOperationException(message);
+                }
+
+                BuildLogger.Log("UnityEngine build succeeded.");
             }
 
-            // 检测输出目录
-            string unityOutputManifestFilePath = $"{pipelineOutputDirectory}/{YooAssetSettings.OutputFolderName}";
-            if (System.IO.File.Exists(unityOutputManifestFilePath) == false)
-            {
-                string message = BuildLogger.GetErrorMessage(ErrorCode.UnityEngineBuildFatal, $"Output {nameof(AssetBundleManifest)} file not found: '{unityOutputManifestFilePath}'.");
-                throw new InvalidOperationException(message);
-            }
+            // PackRawFile 资源包不是 Unity AssetBundle，必须在引擎构建后以原始文件形式输出。
+            TaskBuilding_RFBP.CopyRawFileBundles(buildMapContext, buildParametersContext, true);
+            TaskBuilding_RFBP.VerifyRawFileBundles(buildMapContext, buildParametersContext);
 
-            BuildLogger.Log("UnityEngine build succeeded.");
             BuildResultContext buildResultContext = new BuildResultContext();
             buildResultContext.UnityManifest = unityManifest;
             context.SetContextObject(buildResultContext);

@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace YooAsset.Editor
 {
     /// <summary>
@@ -23,11 +25,14 @@ namespace YooAsset.Editor
             string packageOutputDirectory = buildParametersContext.GetPackageOutputDirectory();
             BuildLogger.Log($"Start making patch package: '{packageOutputDirectory}'.");
 
-            // 拷贝构建日志
-            CopyPipelineFile(pipelineOutputDirectory, packageOutputDirectory, "buildlogtep.json");
+            // 纯 RawFile 包没有 SBP 引擎构建日志。
+            string buildLogPath = $"{pipelineOutputDirectory}/buildlogtep.json";
+            if (File.Exists(buildLogPath))
+                CopyPipelineFile(pipelineOutputDirectory, packageOutputDirectory, "buildlogtep.json");
 
             // 拷贝代码防裁剪配置
-            if (scriptableBuildParameters.WriteLinkXML)
+            string linkXmlPath = $"{pipelineOutputDirectory}/link.xml";
+            if (scriptableBuildParameters.WriteLinkXML && File.Exists(linkXmlPath))
             {
                 CopyPipelineFile(pipelineOutputDirectory, packageOutputDirectory, "link.xml");
             }

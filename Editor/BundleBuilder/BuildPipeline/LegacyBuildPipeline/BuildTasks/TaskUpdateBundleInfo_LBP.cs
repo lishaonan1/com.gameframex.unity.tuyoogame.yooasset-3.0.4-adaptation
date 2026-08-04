@@ -19,6 +19,9 @@ namespace YooAsset.Editor
 
         protected override string GetUnityHash(BuildBundleInfo bundleInfo, BuildContext context)
         {
+            if (bundleInfo.IsRawFileBundle)
+                return "00000000000000000000000000000000";
+
             var buildResult = context.GetContextObject<TaskBuilding_LBP.BuildResultContext>();
             var hash = buildResult.UnityManifest.GetAssetBundleHash(bundleInfo.BundleName);
             if (hash.isValid)
@@ -33,6 +36,9 @@ namespace YooAsset.Editor
         }
         protected override uint GetUnityCRC(BuildBundleInfo bundleInfo, BuildContext context)
         {
+            if (bundleInfo.IsRawFileBundle)
+                return 0;
+
             string filePath = bundleInfo.BuildOutputFilePath;
             if (BuildPipeline.GetCRCForAssetBundle(filePath, out uint crc))
             {

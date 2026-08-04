@@ -19,6 +19,9 @@ namespace YooAsset.Editor
 
         protected override string GetUnityHash(BuildBundleInfo bundleInfo, BuildContext context)
         {
+            if (bundleInfo.IsRawFileBundle)
+                return "00000000000000000000000000000000";
+
             // 注意：当资源包的依赖列表发生变化的时候，ContentHash也会发生变化！
             var buildResult = context.GetContextObject<TaskBuilding_SBP.BuildResultContext>();
             if (buildResult.Results.BundleInfos.TryGetValue(bundleInfo.BundleName, out var value))
@@ -33,6 +36,9 @@ namespace YooAsset.Editor
         }
         protected override uint GetUnityCRC(BuildBundleInfo bundleInfo, BuildContext context)
         {
+            if (bundleInfo.IsRawFileBundle)
+                return 0;
+
             var buildResult = context.GetContextObject<TaskBuilding_SBP.BuildResultContext>();
             if (buildResult.Results.BundleInfos.TryGetValue(bundleInfo.BundleName, out var value))
             {

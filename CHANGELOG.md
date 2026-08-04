@@ -2,6 +2,16 @@
 
 All notable changes to this package will be documented in this file.
 
+## 未发布修复
+
+- 修复 Legacy 和 Scriptable Build Pipeline 混合资源包将 `PackRawFile` 资源错误交给 Unity 引擎构建的问题。
+
+  `.rawfile` 资源包现在由构建管线直接复制并参与输出校验，纯原生文件包不再依赖 Unity 生成的 AssetBundle manifest。
+
+- 修复编辑器模拟模式下 `.rawfile` 资源包被当作虚拟 AssetBundle 加载的问题。
+
+  运行时根据资源包名称后缀将其分流到 `VirtualRawBundle`，保留现有 `RawFileObject` 读取接口。
+
 ## [3.0.4] - 2026-07-14
 
 本版本新增多开客户端缓存目录隔离和稳定加密构建任务，并修复资源清单加载进度及实例化激活状态问题。

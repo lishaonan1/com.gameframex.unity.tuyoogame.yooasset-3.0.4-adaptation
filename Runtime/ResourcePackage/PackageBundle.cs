@@ -103,7 +103,30 @@ namespace YooAsset
         {
             if (_manifest == null)
                 throw new YooInternalException("PackageBundle is not initialized.");
-            return _manifest.BuildBundleType;
+
+            int buildBundleType = _manifest.BuildBundleType;
+            // 3.x 清单只记录包级别类型，PackRawFile 通过 rawfile 后缀标识混合包中的原生文件资源包。
+            if (IsRawFileBundle)
+            {
+                if (buildBundleType == (int)EBundleType.AssetBundle)
+                    return (int)EBundleType.RawBundle;
+                if (buildBundleType == (int)EBundleType.VirtualAssetBundle)
+                    return (int)EBundleType.VirtualRawBundle;
+            }
+            return buildBundleType;
+        }
+
+        /// <summary>
+        /// 是否为打包原生文件规则生成的资源包
+        /// </summary>
+        private bool IsRawFileBundle
+        {
+            get
+            {
+                const string rawFileSuffix = ".rawfile";
+                return string.IsNullOrEmpty(BundleName) == false &&
+                    BundleName.EndsWith(rawFileSuffix, StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         /// <summary>

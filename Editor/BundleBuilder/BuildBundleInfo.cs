@@ -11,6 +11,8 @@ namespace YooAsset.Editor
     /// </summary>
     public class BuildBundleInfo
     {
+        private const string RawFileBundleSuffix = "." + DefaultBundlePackRule.RawFileExtension;
+
         #region 补丁文件的关键信息
         /// <summary>
         /// Unity引擎生成的哈希值（构建内容的哈希值）
@@ -75,6 +77,18 @@ namespace YooAsset.Editor
         /// 资源包名称
         /// </summary>
         public string BundleName { private set; get; }
+
+        /// <summary>
+        /// 是否为打包原生文件规则生成的资源包
+        /// </summary>
+        public bool IsRawFileBundle
+        {
+            get
+            {
+                return string.IsNullOrEmpty(BundleName) == false &&
+                    BundleName.EndsWith(RawFileBundleSuffix, StringComparison.OrdinalIgnoreCase);
+            }
+        }
 
         /// <summary>
         /// 是否已加密

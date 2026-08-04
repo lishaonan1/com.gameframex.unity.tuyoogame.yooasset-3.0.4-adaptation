@@ -43,39 +43,45 @@ namespace YooAsset.Editor
             var scriptableBuildParameters = buildParametersContext.Parameters as ScriptableBuildParameters;
 
             // 构建内容
-            var bundleBuilds = buildMapContext.GetPipelineBuilds(scriptableBuildParameters.ReplaceAssetPathWithAddress);
-            var buildContent = new BundleBuildContent(bundleBuilds);
+            TaskBuilding_RFBP.ValidateRawFileBundles(buildMapContext);
+            var bundleBuilds = buildMapContext.GetPipelineBuilds(scriptableBuildParameters.ReplaceAssetPathWithAddress, false);
 
             // 开始构建
-            IBundleBuildResults buildResults;
-            var buildParameters = scriptableBuildParameters.GetBundleBuildParameters();
+            IBundleBuildResults buildResults = null;
             string builtinShadersBundleName = scriptableBuildParameters.BuiltinShadersBundleName;
             string monoScriptsBundleName = scriptableBuildParameters.MonoScriptsBundleName;
-            var taskList = SBPBuildTasks.Create(builtinShadersBundleName, monoScriptsBundleName);
-            ReturnCode exitCode = ContentPipeline.BuildAssetBundles(buildParameters, buildContent, out buildResults, taskList);
-            if (exitCode < 0)
+            if (bundleBuilds.Length > 0)
             {
-                // 打印 SBP 构建详细上下文，辅助定位 ReturnCode.Exception 根因
-                UnityEngine.Debug.LogError($"[TaskBuilding_SBP DEBUG] BuildTarget: {buildParameters.Target}, " +
-                    $"Content pipeline failed with [{exitCode}].");
-                string message = BuildLogger.GetErrorMessage(ErrorCode.UnityEngineBuildFailed, $"UnityEngine build failed. ReturnCode: {exitCode}.");
-                throw new InvalidOperationException(message);
+                var buildContent = new BundleBuildContent(bundleBuilds);
+                var buildParameters = scriptableBuildParameters.GetBundleBuildParameters();
+                var taskList = SBPBuildTasks.Create(builtinShadersBundleName, monoScriptsBundleName);
+                ReturnCode exitCode = ContentPipeline.BuildAssetBundles(buildParameters, buildContent, out buildResults, taskList);
+                if (exitCode < 0)
+                {
+                    string message = BuildLogger.GetErrorMessage(ErrorCode.UnityEngineBuildFailed, $"UnityEngine build failed. ReturnCode: {exitCode}.");
+                    throw new InvalidOperationException(message);
+                }
             }
 
             // 说明：解决因为特殊资源包导致验证失败。
             // 例如：当项目里没有着色器，如果有依赖内置着色器就会验证失败。
-            if (string.IsNullOrEmpty(builtinShadersBundleName) == false)
+            if (buildResults != null && string.IsNullOrEmpty(builtinShadersBundleName) == false)
             {
                 if (buildResults.BundleInfos.ContainsKey(builtinShadersBundleName))
                     buildMapContext.CreateEmptyBundleInfo(builtinShadersBundleName);
             }
-            if (string.IsNullOrEmpty(monoScriptsBundleName) == false)
+            if (buildResults != null && string.IsNullOrEmpty(monoScriptsBundleName) == false)
             {
                 if (buildResults.BundleInfos.ContainsKey(monoScriptsBundleName))
                     buildMapContext.CreateEmptyBundleInfo(monoScriptsBundleName);
             }
 
-            BuildLogger.Log("UnityEngine build succeeded.");
+            // PackRawFile 资源包不是 SBP 资源包，必须在引擎构建后以原始文件形式输出。
+            TaskBuilding_RFBP.CopyRawFileBundles(buildMapContext, buildParametersContext, true);
+            TaskBuilding_RFBP.VerifyRawFileBundles(buildMapContext, buildParametersContext);
+
+            if (buildResults != null)
+                BuildLogger.Log("UnityEngine build succeeded.");
             BuildResultContext buildResultContext = new BuildResultContext();
             buildResultContext.Results = buildResults;
             buildResultContext.BuiltinShadersBundleName = builtinShadersBundleName;
