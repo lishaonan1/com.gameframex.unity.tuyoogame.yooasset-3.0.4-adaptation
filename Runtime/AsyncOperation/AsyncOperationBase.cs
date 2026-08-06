@@ -256,13 +256,14 @@ namespace YooAsset
         /// <summary>
         /// 终止异步任务（递归中止所有子任务）
         /// </summary>
-        internal void AbortOperation()
+        /// <param name="logWarning">是否记录主动中止警告</param>
+        internal void AbortOperation(bool logWarning = true)
         {
             if (_children != null)
             {
                 for (int i = _children.Count - 1; i >= 0; i--)
                 {
-                    _children[i].AbortOperation();
+                    _children[i].AbortOperation(logWarning);
                 }
             }
 
@@ -271,7 +272,10 @@ namespace YooAsset
                 InternalAbort();
                 _error = "Operation was aborted.";
                 _status = EOperationStatus.Failed;
-                YooLogger.LogWarning($"Async operation '{GetType().Name}' has been aborted.");
+                if (logWarning)
+                {
+                    YooLogger.LogWarning($"Async operation '{GetType().Name}' has been aborted.");
+                }
             }
 
             // 注意：强制收尾，确保Task能完成

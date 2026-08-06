@@ -126,19 +126,20 @@ namespace YooAsset
         /// <summary>
         /// 中止所有任务
         /// </summary>
-        public void AbortAll()
+        /// <param name="logWarning">是否记录主动中止警告</param>
+        public void AbortAll(bool logWarning = true)
         {
             // 终止临时队列里的任务
             foreach (var operation in _pendingOperations)
             {
-                operation.AbortOperation();
+                operation.AbortOperation(logWarning);
             }
             _pendingOperations.Clear();
 
             // 终止正在进行的任务
             foreach (var operation in _runningOperations)
             {
-                operation.AbortOperation();
+                operation.AbortOperation(logWarning);
             }
             _runningOperations.Clear();
         }

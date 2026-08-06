@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 
 ## 未发布修复
 
+- 修复编辑器退出播放时，异步操作系统正常关闭仍输出主动中止警告的问题。
+
+  全局关闭路径现在会静默中止未完成操作；主动清理资源包操作和业务侧取消仍保留原有 Warning。
+
 - 修复 Legacy 和 Scriptable Build Pipeline 混合资源包将 `PackRawFile` 资源错误交给 Unity 引擎构建的问题。
 
   `.rawfile` 资源包现在由构建管线直接复制并参与输出校验，纯原生文件包不再依赖 Unity 生成的 AssetBundle manifest。

@@ -145,7 +145,8 @@ namespace YooAsset
             // 清空所有调度器
             foreach (var scheduler in _schedulerList)
             {
-                scheduler.AbortAll();
+                // 注意：系统关闭属于生命周期内的正常清理，不输出主动中止警告。
+                scheduler.AbortAll(logWarning: false);
             }
             _schedulerDict.Clear();
             _schedulerList.Clear();
